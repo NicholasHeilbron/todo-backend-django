@@ -6,7 +6,17 @@ from todo_backend_django.JSONResponse import JSONResponse
 from todo_backend_django.models import TodoItem
 from todo_backend_django.serializers import TodoItemSerializer
 
-
+class DoneTodoList(APIView):
+    def post(self, request, format=None):
+        serializer = TodoItemSerializer(data=request.DATA)
+        if serializer.is_valid():
+            saved_item = serializer.save()
+            saved_item.url = request.build_absolute_uri('/todo/' + str(saved_item.id))
+            saved_item.save()
+            serializer = TodoItemSerializer(instance=saved_item)
+            return JSONResponse(serializer.data, status=status.HTTP_201_CREATED)
+        return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class TodoList(APIView):
     def get(self, request, format=None):
         todo_items = TodoItem.objects.all()
@@ -26,6 +36,17 @@ class TodoList(APIView):
     def delete(self, request, format=None):
         TodoItem.objects.all().delete()
         return JSONResponse(None, status=status.HTTP_204_NO_CONTENT)
+    
+    def complete(self, request, pk, format=None):
+        serializer = TodoItemSerializer(data=request.DATA)
+        if serializer.is_valid():
+            DoneTodoList.post(
+                saved_item = serializer.save()
+                saved_item.url = request.build_absolute_uri('/todo/' + str(saved_item.id))
+                saved_item.save()
+                serializer = TodoItemSerializer(instance=saved_item)
+                return JSONResponse(serializer.data, status=status.HTTP_201_CREATED))
+        return JSONResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class Todo(APIView):
     def get(self, request, pk, format=None):
